@@ -5,6 +5,7 @@ on:
       - main
 jobs:
   deploy:
+    name: deploy to cluster
     runs-on: ubuntu-latest   
     steps:
       - name: Checkout
@@ -30,3 +31,48 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest app
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:latest
+      
+      - name: fill template
+        uses: danielr1996/envsubst-action@1.0.0
+        env:
+          DEPLOYMENT_NAME: test-deployment
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: test-images
+        with:
+          input: k8s-template.yml
+          output: k8s-deployment.yml
+
+      - name: apply manifest
+        uses: kodermax/kubectl-aws-eks@main
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        with:
+          args: apply -f k8s-deployment.yaml
+      
+      - name: rollout restart deployment
+        uses: kodermax/kubectl-aws-eks@main
+        env:
+          DEPLOYMENT_NAME: test-deployment
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        with:
+          args: rollout restart deployment/$DEPLOYMENT_NAME
+
+      - name: wait for condition=Available
+        uses: kodermax/kubectl-aws-eks@main
+        env:
+          DEPLOYMENT_NAME: wait for deployment
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        with:
+          args: wait --for=condition=Available Deployment/$DEPLOYMENT_NAME --timeout=600s
+
+
+      - name: get for condition=Available
+        uses: kodermax/kubectl-aws-eks@main
+        env:
+          DEPLOYMENT_NAME: wait for deployment
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        with:
+          args: get service $DEPLOYMENT_NAME-load-balancer -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}' > service_url.txt
+      
+      - name: print service URL
+        run: echo "Service exposed at $(cat service_url.txt)"
