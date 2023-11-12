@@ -22,16 +22,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push docker image to Amazon ECR
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: test-images
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build --pull -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest app
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-          docker push $REGISTRY/$REPOSITORY:latest
-      
       - name: fill template
         env:
           DEPLOYMENT_NAME: test-deployment
@@ -41,10 +31,20 @@ jobs:
           DEPLOYMENT_NAME=$DEPLOYMENT_NAME 
           REGISTRY=$REGISTRY
           REPOSITORY=$REPOSITORY
-          envsubst < k8s-template.yml > /tmp/k8s-deployment.yml
+          envsubst < k8s-template.yml > k8s-deployment.yml
 
       - name: list all files
         run: ls -la
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: test-images
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build --pull -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest app
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:latest
 
       - name: apply manifest
         uses: kodermax/kubectl-aws-eks@main
