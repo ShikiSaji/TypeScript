@@ -73,7 +73,7 @@ jobs:
       - name: get service URL
         uses: kodermax/kubectl-aws-eks@main
         env:
-          DEPLOYMENT_NAME: wait for deployment
+          DEPLOYMENT_NAME: test-deployment
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
           args: get service $DEPLOYMENT_NAME-load-balancer -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}' > service_url.txt
