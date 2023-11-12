@@ -48,7 +48,7 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
-          args: apply -f /tmp/k8s-deployment.yml
+          args: apply -f k8s-template.yml
       
       - name: rollout restart deployment
         uses: kodermax/kubectl-aws-eks@main
