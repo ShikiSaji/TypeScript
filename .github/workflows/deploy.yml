@@ -62,16 +62,15 @@ jobs:
         with:
           args: rollout restart deployment/$DEPLOYMENT_NAME
 
-      - name: wait for condition=Available
-        uses: kodermax/kubectl-aws-eks@main
-        env:
-          DEPLOYMENT_NAME: wait for deployment
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-        with:
-          args: wait --for=condition=Available Deployment/$DEPLOYMENT_NAME --timeout=600s
+      # - name: wait for condition=Available
+      #   uses: kodermax/kubectl-aws-eks@main
+      #   env:
+      #     DEPLOYMENT_NAME: wait for deployment
+      #     KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+      #   with:
+      #     args: wait --for=condition=Available Deployment/$DEPLOYMENT_NAME --timeout=600s
 
-
-      - name: get for condition=Available
+      - name: get service URL
         uses: kodermax/kubectl-aws-eks@main
         env:
           DEPLOYMENT_NAME: wait for deployment
