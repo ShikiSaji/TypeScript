@@ -41,14 +41,14 @@ jobs:
           DEPLOYMENT_NAME=$DEPLOYMENT_NAME 
           REGISTRY=$REGISTRY
           REPOSITORY=$REPOSITORY
-          envsubst < k8s-template.yml > k8s-deployment.yml
+          envsubst < k8s-template.yml > /tmp/k8s-deployment.yml
 
       - name: apply manifest
         uses: kodermax/kubectl-aws-eks@main
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
-          args: apply -f k8s-deployment.yaml
+          args: apply -f /tmp/k8s-deployment.yaml
       
       - name: rollout restart deployment
         uses: kodermax/kubectl-aws-eks@main
