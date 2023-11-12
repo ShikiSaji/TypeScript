@@ -22,7 +22,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: fill template
+      - name: fill template and change permissions
         env:
           DEPLOYMENT_NAME: test-deployment
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -32,6 +32,7 @@ jobs:
           REGISTRY=$REGISTRY
           REPOSITORY=$REPOSITORY
           envsubst < k8s-template.yml > k8s-deployment.yml
+          chmod 777 k8s-deployment.yml
 
       - name: list all files
         run: ls -la
@@ -51,7 +52,7 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
-          args: apply -f k8s-template.yml
+          args: apply -f k8s-deployment.yml
       
       - name: rollout restart deployment
         uses: kodermax/kubectl-aws-eks@main
