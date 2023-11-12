@@ -1,0 +1,41 @@
+# We define the deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${DEPLOYMENT_NAME}
+spec:
+  replicas: 2
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: ${DEPLOYMENT_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${DEPLOYMENT_NAME}
+    spec:
+      containers:
+      - name: ${DEPLOYMENT_NAME}
+        image: ${REGISTRY}/${REPOSITORY}:latest
+        ports:
+        - containerPort: 80
+          name: "http-server"
+        resources:
+          requests:
+            cpu: "2"
+            memory: 4Gi
+      restartPolicy: Always
+---
+# Finally, We expose the deployment with a service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${DEPLOYMENT_NAME}-load-balancer
+spec:
+  selector:
+    app: ${DEPLOYMENT_NAME}
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
