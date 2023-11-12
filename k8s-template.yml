@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: ${DEPLOYMENT_NAME}
 spec:
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 0
   selector:
     matchLabels:
@@ -22,8 +22,8 @@ spec:
           name: "http-server"
         resources:
           requests:
-            cpu: "2"
-            memory: 4Gi
+            cpu: "1"
+            memory: 1Gi
       restartPolicy: Always
 ---
 # Finally, We expose the deployment with a service
