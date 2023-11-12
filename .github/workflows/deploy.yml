@@ -28,19 +28,20 @@ jobs:
           REPOSITORY: test-images
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest app
+          docker build --pull -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest app
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:latest
       
       - name: fill template
-        uses: danielr1996/envsubst-action@1.0.0
         env:
           DEPLOYMENT_NAME: test-deployment
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: test-images
-        with:
-          input: k8s-template.yml
-          output: k8s-deployment.yml
+        run: |
+          DEPLOYMENT_NAME=$DEPLOYMENT_NAME 
+          REGISTRY=$REGISTRY
+          REPOSITORY=$REPOSITORY
+          envsubst < k8s-template.yml > k8s-deployment.yml
 
       - name: apply manifest
         uses: kodermax/kubectl-aws-eks@main
