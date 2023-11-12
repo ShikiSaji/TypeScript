@@ -43,6 +43,9 @@ jobs:
           REPOSITORY=$REPOSITORY
           envsubst < k8s-template.yml > /tmp/k8s-deployment.yml
 
+      - name: list all files
+        run: ls -la
+
       - name: apply manifest
         uses: kodermax/kubectl-aws-eks@main
         env:
